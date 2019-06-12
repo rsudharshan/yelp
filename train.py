@@ -137,7 +137,10 @@ print(model.summary())
 batch_size = 128
 X_train.shape
 # y_train.shape
-history = model.fit(X_train, y_train, epochs=20, batch_size=batch_size, verbose=1, validation_split=0.1)
+history = model.fit(X_train, y_train, epochs=10, batch_size=batch_size, verbose=1, validation_split=0.1)
+
+# Save entire model to a HDF5 file
+model.save('100k_price.h5')
 
 model.evaluate(x=X_test, y=y_test, batch_size=batch_size, verbose=1)
 
