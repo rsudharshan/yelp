@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 import tensorflow as tf
 import re
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.layers import *
+# from tensorflow.keras.utils.np_utils import to_categorical
+from tensorflow.keras.initializers import Constant
 
 
 reviews = pd.read_csv("bq-100k-reviews.csv")
@@ -21,23 +25,16 @@ puncts = ['!', '?', '$', '&', '/', '%', '#', '*','£']
 
 def clean_str(x):
     x = str(x)
-    
     x = x.lower()
-    
     x = re.sub(r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})", "url", x)
-    
     for k, v in replace_puncts.items():
         x = x.replace(k, f' {v} ')
-        
     for punct in strip_chars:
         x = x.replace(punct, ' ') 
-    
     for punct in puncts:
         x = x.replace(punct, f' {punct} ')
-        
     x = x.replace(" '", " ")
     x = x.replace("' ", " ")
-        
     return x
 
 reviews['processed'] = reviews['text'].apply(clean_str)
@@ -116,31 +113,35 @@ fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 log.addHandler(fh)
 
-from tensorflow.keras.layers import *
-# from tensorflow.keras.utils.np_utils import to_categorical
-from tensorflow.keras.initializers import Constant
-#model = tf.keras.models.Sequential()
 
-#model.add(Embedding(num_words,
-#                    embedding_dim,
-#                    embeddings_initializer=Constant(embedding_matrix),
-#                    input_length=sequence_length,
-#                    trainable=True))
-#model.add(SpatialDropout1D(0.2))
-#model.add(Bidirectional(LSTM(64, return_sequences=True)))
-#model.add(Bidirectional(LSTM(32)))
-#model.add(Dropout(0.25))
-#model.add(Dense(units=4, activation='softmax'))
-#model.compile(loss = 'categorical_crossentropy', optimizer='adam',metrics = ['accuracy'])
-#print(model.summary())
+model = tf.keras.models.Sequential()
+
+model.add(Embedding(num_words,
+                   embedding_dim,
+                   embeddings_initializer=Constant(embedding_matrix.tolist()),
+                   input_length=sequence_length,
+                   trainable=True))
+model.add(SpatialDropout1D(0.2))
+model.add(Bidirectional(LSTM(64, return_sequences=True)))
+model.add(Bidirectional(LSTM(32)))
+model.add(Dropout(0.25))
+model.add(Dense(units=4, activation='softmax'))
+model.compile(loss = 'categorical_crossentropy', optimizer='adam',metrics = ['accuracy'])
+print(model.summary())
+
+# define the checkpoint
+filepath = "model.h5"
+checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
+callbacks_list = [checkpoint]
 
 batch_size = 128
-X_train.shape
-# y_train.shape
-#history = model.fit(X_train, y_train, epochs=10, batch_size=batch_size, verbose=1, validation_split=0.1)
+history = model.fit(X_train, y_train, epochs=20, batch_size=batch_size, verbose=1, validation_split=0.1, callbacks=callbacks_list)
 
-# Save entire model to a HDF5 file
-#model.save('100k_price.h5')
-model = tf.keras.models.load_model('models/100k_price.h5')
-model.evaluate(x=X_test, y=y_test, batch_size=batch_size, verbose=1)
+#Save entire model to a HDF5 file
+model.save('model.h5')
+
+# model = tf.keras.models.load_model('model.h5')
+# h = model.fit(X_train, y_train, epochs=10, batch_size=batch_size, verbose=1, validation_split=0.1, callbacks=callbacks_list)
+
+# model.evaluate(x=X_test, y=y_test, batch_size=batch_size, verbose=1)
 
