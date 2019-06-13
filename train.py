@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 import tensorflow as tf
 import re
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -25,23 +25,16 @@ puncts = ['!', '?', '$', '&', '/', '%', '#', '*','£']
 
 def clean_str(x):
     x = str(x)
-    
     x = x.lower()
-    
     x = re.sub(r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})", "url", x)
-    
     for k, v in replace_puncts.items():
         x = x.replace(k, f' {v} ')
-        
     for punct in strip_chars:
         x = x.replace(punct, ' ') 
-    
     for punct in puncts:
         x = x.replace(punct, f' {punct} ')
-        
     x = x.replace(" '", " ")
     x = x.replace("' ", " ")
-        
     return x
 
 reviews['processed'] = reviews['text'].apply(clean_str)
@@ -142,7 +135,7 @@ checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_
 callbacks_list = [checkpoint]
 
 batch_size = 128
-history = model.fit(X_train, y_train, epochs=10, batch_size=batch_size, verbose=1, validation_split=0.1, callbacks=callbacks_list)
+history = model.fit(X_train, y_train, epochs=20, batch_size=batch_size, verbose=1, validation_split=0.1, callbacks=callbacks_list)
 
 #Save entire model to a HDF5 file
 model.save('model.h5')
