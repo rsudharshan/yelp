@@ -28,8 +28,6 @@ TEST_USER = 200
 
 
 from cfmodel import CFModel
-
-
 model = CFModel(N_USERS+1, N_RESTAURANTS+1, K_FACTORS)
 model.compile(loss='mse', optimizer='adamax')
 
@@ -37,8 +35,7 @@ model.compile(loss='mse', optimizer='adamax')
 callbacks = [EarlyStopping('val_loss', patience=2), 
              ModelCheckpoint('rec_weights.h5', save_best_only=True)]
 
-# Use 30 epochs, 90% training data, 10% validation data 
-history = model.fit([Users, Restaurants], Stars, nb_epoch=50, validation_split=.1, verbose=2, callbacks=callbacks)
+history = model.fit([Users, Restaurants], Stars, nb_epoch=5, validation_split=.1, verbose=2, callbacks=callbacks)
 
 import pandas 
 df = pandas.DataFrame(stars88["business_id"])
@@ -49,9 +46,17 @@ for i,row in df.iterrows():
         biz_to_beid[row["business_id"]]= row["beid"]
 beid_to_biz = dict(map(reversed, biz_to_beid.items()))
 
+df = pandas.DataFrame(stars88["user_id"])
+df["ueid"]=stars88["ueid"]
+user_to_ueid = {}
+for i,row in df.iterrows():
+    if row["user_id"] not in user_to_ueid:
+        user_to_ueid[row["user_id"]]= row["ueid"]
+ueid_to_user = dict(map(reversed, user_to_ueid.items()))
+
 import pickle
 with open('id_store.pkl', 'w') as f:
-    pickle.dump([biz_to_beid, beid_to_biz, user_to_ueid,ueid_to_user], f,protocol=-1)
+    pickle.dump([biz_to_beid, beid_to_biz, user_to_ueid,ueid_to_user, N_USERS, N_RESTAURANTS, K_FACTORS], f,protocol=-1)
 
 f.close()
 
