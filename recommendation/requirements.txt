@@ -1,0 +1,6 @@
+keras==2.0.0
+tensorflow==1.13.1
+pandas
+numpy
+matplotlib
+flask
