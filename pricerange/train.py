@@ -68,7 +68,7 @@ print('Found %s unique tokens.' % len(word_index))
 
 import os 
 embeddings_index = {}
-f = open(os.path.join('data/glove.6B', 'glove.6B.100d.txt'))
+f = open(os.path.join('../data/glove.6B', 'glove.6B.100d.txt'))
 for line in f:
     values = line.split()
     word = values[0]
